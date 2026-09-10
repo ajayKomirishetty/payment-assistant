@@ -60,7 +60,20 @@ def create_customer(customer_data: dict):
 
     return customer
 
-def create_payment(customer,amount: int,description: str,):
+def create_customers():
+    customers = {}
+
+    for customer_data in CUSTOMERS:
+        customer = create_customer(customer_data)
+        customers[customer_data["email"]] = customer
+
+    return customers
+
+def create_payment(
+    customer,
+    amount: int,
+    description: str,
+):
     payment_intent = stripe.PaymentIntent.create(
         amount=amount,
         currency="usd",
@@ -83,17 +96,116 @@ def create_payment(customer,amount: int,description: str,):
 
     return payment_intent
 
+def create_failed_payment(customer):
+    try:
+        stripe.PaymentIntent.create(
+            amount=7500,
+            currency="usd",
+            customer=customer.id,
+            payment_method="pm_card_chargeDeclined",
+            confirm=True,
+            description="Declined payment test",
+            automatic_payment_methods={
+                "enabled": True,
+                "allow_redirects": "never",
+            },
+        )
+    except stripe.CardError:
+        print(
+            f"Created declined payment attempt "
+            f"for {customer.name}"
+        )
 
-def create_customers():
-    customers = {}
+def create_payments(customers):
+    create_payment(
+        customers["maya@example.com"],
+        12000,
+        "Maya payment",
+    )
 
-    for customer_data in CUSTOMERS:
-        customer = create_customer(customer_data)
-        customers[customer_data["email"]] = customer
+    create_payment(
+        customers["maya@example.com"],
+        8000,
+        "Maya second payment",
+    )
 
-    return customers
+    create_payment(
+        customers["billing@acme.example.com"],
+        50000,
+        "Acme Corp payment",
+    )
+
+    create_payment(
+        customers["john@example.com"],
+        35000,
+        "John Smith payment",
+    )
+
+    create_failed_payment(
+        customers["sarah@example.com"]
+    )
+    create_payment(
+        customers["maya@example.com"],
+        12000,
+        "Maya payment",
+    )
+
+    create_payment(
+        customers["maya@example.com"],
+        8000,
+        "Maya second payment",
+    )
+
+    create_payment(
+        customers["billing@acme.example.com"],
+        50000,
+        "Acme Corp payment",
+    )
+
+    create_payment(
+        customers["john@example.com"],
+        35000,
+        "John Smith payment",
+    )
+
+def create_invoice(
+    customer,
+    amount: int,
+    description: str,
+):
+    invoice_item = stripe.InvoiceItem.create(
+        customer=customer.id,
+        amount=amount,
+        currency="usd",
+        description=description,
+    )
+
+    invoice = stripe.Invoice.create(
+        customer=customer.id,
+        collection_method="send_invoice",
+        days_until_due=7,
+    )
+
+    invoice = stripe.Invoice.finalize_invoice(invoice.id)
+
+    print(
+        f"Created invoice: "
+        f"${amount / 100:.2f} "
+        f"for {customer.name} "
+        f"({invoice.status})"
+    )
+
+    return invoice
+
+def create_invoices(customers):
+    create_invoice(
+        customers["billing@acme.example.com"],
+        120000,
+        "Outstanding consulting invoice",
+    )
 
 
 if __name__ == "__main__":
     customers = create_customers()
-    create_payment(customers["maya@example.com"],12000,"Maya payment")
+    create_payments(customers)
+    create_invoices(customers)
