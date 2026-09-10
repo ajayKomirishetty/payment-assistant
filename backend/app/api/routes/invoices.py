@@ -1,8 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-import stripe
-
-from app.core.config import settings
+from app.schemas.invoice import CreateInvoiceRequest
+from app.services.stripe_service import StripeService
 
 
 router = APIRouter(
@@ -11,20 +10,58 @@ router = APIRouter(
 )
 
 
-stripe.api_key = settings.stripe_secret_key
-
-
 @router.get("")
 def list_invoices():
-    invoices = stripe.Invoice.list(limit=20)
+    stripe_service = StripeService()
 
-    return [
-        {
+    invoices = stripe_service.list_invoices()
+
+    return {
+      "message": (
+        f"Created a ${command.amount:.2f} invoice "
+        f"for {customer.name}."
+      ),
+        "success": True,
+        "intent": command.intent,
+        "customer": customer.name,
+        "invoice_id": invoice.id,
+        "amount": amount_cents,
+        "status": invoice.status,
+        "due_date": command.due_date,
+    }
+
+
+@router.post("")
+def create_invoice(request: CreateInvoiceRequest):
+    stripe_service = StripeService()
+
+    customer = stripe_service.find_customer(request.customer)
+
+    if not customer:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Customer '{request.customer}' not found.",
+        )
+
+    try:
+        invoice = stripe_service.create_invoice(
+            customer_id=customer.id,
+            amount=request.amount,
+            description=request.description,
+            days_until_due=request.days_until_due,
+        )
+
+        return {
             "id": invoice.id,
-            "customer": invoice.customer,
+            "customer": customer.id,
             "amount_due": invoice.amount_due,
             "currency": invoice.currency,
             "status": invoice.status,
+            "description": request.description,
         }
-        for invoice in invoices.data
-    ]
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        )
