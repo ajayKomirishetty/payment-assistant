@@ -1,0 +1,186 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: #f6f7f9;
+  color: #1f2937;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 20px 32px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.header p {
+  margin: 5px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.chat-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  flex: 1;
+  padding: 40px 20px 120px;
+}
+
+.welcome {
+  text-align: center;
+  padding: 60px 20px 30px;
+}
+
+.welcome h2 {
+  margin-bottom: 8px;
+  font-size: 28px;
+  color: #111827;
+}
+
+.welcome p {
+  color: #6b7280;
+  margin-bottom: 28px;
+}
+
+.examples {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.examples button {
+  background: white;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.examples button:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.message-row {
+  display: flex;
+}
+
+.message-row.user {
+  justify-content: flex-end;
+}
+
+.message-row.assistant {
+  justify-content: flex-start;
+}
+
+.message {
+  max-width: 75%;
+  padding: 13px 16px;
+  border-radius: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.message-row.user .message {
+  background: #111827;
+  color: white;
+}
+
+.message-row.assistant .message {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.message.loading {
+  color: #6b7280;
+}
+
+.input-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 10px;
+  padding: 18px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.input-area input {
+  flex: 1;
+  max-width: 800px;
+  margin-left: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 13px 15px;
+  outline: none;
+}
+
+.input-area input:focus {
+  border-color: #6b7280;
+}
+
+.input-area button {
+  margin-right: auto;
+  border: none;
+  border-radius: 10px;
+  padding: 0 22px;
+  background: #111827;
+  color: white;
+  cursor: pointer;
+}
+
+.input-area button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+  .examples {
+    grid-template-columns: 1fr;
+  }
+
+  .message {
+    max-width: 90%;
+  }
+
+  .input-area {
+    padding: 12px;
+  }
+}
