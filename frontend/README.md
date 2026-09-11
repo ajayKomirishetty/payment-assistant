@@ -1,75 +1,187 @@
-# React + TypeScript + Vite
+# Replicant Payments Assistant — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript frontend for the Replicant AI Payments Assistant.
 
-Currently, two official plugins are available:
+This application provides a chatbot-style interface for the business owner to interact with the payments assistant using natural-language commands.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- Conversational payments assistant
+- Natural-language commands
+- Daily payment summaries
+- Payment comparisons
+- Customer payment refunds
+- Invoice creation
+- Suggested commands
+- Loading and error states
+- Responsive chat interface
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- React
+- TypeScript
+- Vite
+- CSS
+- Fetch API
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The frontend communicates with the FastAPI backend.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```text
+React / TypeScript
+        │
+        │ HTTP
+        ▼
+FastAPI Backend
+        │
+        ├── Stripe
+        └── OpenAI
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Requirements
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Node.js 18+
+- npm
+- Running FastAPI backend
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Installation
 
+From this directory:
+
+```bash
+npm install
 ```
+
+## Development
+
+Start the frontend development server:
+
+```bash
+npm run dev
+```
+
+Vite will provide the local development URL, typically:
+
+```text
+http://localhost:5173
+```
+
+Make sure the backend is also running:
+
+```bash
+cd ../backend
+
+source .venv/bin/activate
+
+uvicorn app.main:app --reload
+```
+
+The backend normally runs at:
+
+```text
+http://localhost:8000
+```
+
+## Example Commands
+
+The assistant supports natural-language requests such as:
+
+```text
+Summarize my day
+```
+
+```text
+Refund Maya's last payment
+```
+
+```text
+Create a $250 invoice for Acme Corp due next Friday
+```
+
+```text
+How much did we take last week compared to the week before?
+```
+
+## API
+
+The frontend sends assistant requests to:
+
+```text
+POST http://localhost:8000/api/assistant
+```
+
+Example request:
+
+```json
+{
+  "message": "Refund Maya's last payment"
+}
+```
+
+The backend handles:
+
+- Natural-language interpretation
+- Validation
+- Stripe operations
+- Financial calculations
+- LLM-generated responses
+
+The frontend is intentionally kept responsible for presentation and user interaction rather than financial business logic.
+
+## Production Build
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## Project Structure
+
+```text
+frontend/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── App.tsx
+│   ├── App.css
+│   ├── index.css
+│   └── main.tsx
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
+```
+
+## Design Approach
+
+The frontend is intentionally designed as a focused conversational interface rather than a traditional payments dashboard.
+
+The business owner can describe an action in natural language and receive the result directly in the conversation.
+
+The UI also provides suggested commands for the most common workflows, making the primary capabilities discoverable without requiring the user to know specific commands.
+
+## Separation of Responsibilities
+
+The frontend does not directly communicate with Stripe.
+
+```text
+User
+  ↓
+React UI
+  ↓
+FastAPI
+  ↓
+AssistantService
+  ↓
+StripeService / LLMService
+  ↓
+Stripe / OpenAI
+```
+
+This keeps Stripe credentials and financial operations on the backend.
