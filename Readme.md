@@ -170,7 +170,7 @@ No real money should be involved.
 # 1. Clone the Repository
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
+git clone https://github.com/ajayKomirishetty/replicant-payment-assistant
 cd replicant-payments-assistant
 ```
 
