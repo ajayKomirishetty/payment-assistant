@@ -117,30 +117,6 @@ def create_failed_payment(customer):
         )
 
 def create_payments(customers):
-    create_payment(
-        customers["maya@example.com"],
-        12000,
-        "Maya payment",
-    )
-
-    create_payment(
-        customers["maya@example.com"],
-        8000,
-        "Maya second payment",
-    )
-
-    create_payment(
-        customers["billing@acme.example.com"],
-        50000,
-        "Acme Corp payment",
-    )
-
-    create_payment(
-        customers["john@example.com"],
-        35000,
-        "John Smith payment",
-    )
-
     create_failed_payment(
         customers["sarah@example.com"]
     )

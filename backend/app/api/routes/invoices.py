@@ -16,26 +16,26 @@ def list_invoices():
 
     invoices = stripe_service.list_invoices()
 
-    return {
-      "message": (
-        f"Created a ${command.amount:.2f} invoice "
-        f"for {customer.name}."
-      ),
-        "success": True,
-        "intent": command.intent,
-        "customer": customer.name,
-        "invoice_id": invoice.id,
-        "amount": amount_cents,
-        "status": invoice.status,
-        "due_date": command.due_date,
-    }
+    return [
+        {
+            "id": invoice.id,
+            "customer": invoice.customer,
+            "amount_due": invoice.amount_due,
+            "currency": invoice.currency,
+            "status": invoice.status,
+            "due_date": invoice.due_date,
+        }
+        for invoice in invoices.data
+    ]
 
 
 @router.post("")
 def create_invoice(request: CreateInvoiceRequest):
     stripe_service = StripeService()
 
-    customer = stripe_service.find_customer(request.customer)
+    customer = stripe_service.find_customer(
+        request.customer
+    )
 
     if not customer:
         raise HTTPException(
@@ -54,10 +54,12 @@ def create_invoice(request: CreateInvoiceRequest):
         return {
             "id": invoice.id,
             "customer": customer.id,
+            "customer_name": customer.name,
             "amount_due": invoice.amount_due,
             "currency": invoice.currency,
             "status": invoice.status,
             "description": request.description,
+            "due_date": invoice.due_date,
         }
 
     except Exception as exc:

@@ -19,14 +19,16 @@ class StripeService:
         )
 
     def find_customer_by_email(self, email: str):
-        customers = self.client.customers.list(
-            params={
-                "email": email,
-                "limit": 1,
-            }
-        )
+      email = email.strip().lower()
 
-        return customers.data[0] if customers.data else None
+      customers = self.client.customers.list(
+          params={
+              "email": email,
+              "limit": 1,
+          }
+      )
+
+      return customers.data[0] if customers.data else None
 
     def find_customer(self, name_or_email: str):
         """
@@ -278,75 +280,48 @@ class StripeService:
       description: str,
       days_until_due: int = 7,
     ):
-        """
-        Create an invoice with a single line item.
+      """
+      Create an invoice with a single line item.
 
-        Amount is expressed in cents.
-        Example: $250.00 = 25000.
-        """
+      Amount is expressed in the smallest currency unit.
+      For example:
+        USD 250.00 = 25000 cents
+        CAD 250.00 = 25000 cents
+      """
 
-        invoice = self.client.invoices.create(
-            params={
-                "customer": customer_id,
-                "collection_method": "send_invoice",
-                "days_until_due": days_until_due,
-                "auto_advance": False,
-            }
-        )
+      invoice = self.client.invoices.create(
+          params={
+              "customer": customer_id,
+              "collection_method": "send_invoice",
+              "days_until_due": days_until_due,
+              "auto_advance": False,
+          }
+      )
 
-        self.client.invoice_items.create(
-            params={
-                "customer": customer_id,
-                "amount": amount,
-                "currency": "usd",
-                "description": description,
-                "invoice": invoice.id,
-            }
-        )
+      # Stripe determines the invoice currency based on
+      # the customer/invoice configuration.
+      currency = invoice.currency
 
-        invoice = self.client.invoices.finalize_invoice(
-            invoice.id
-        )
+      self.client.invoice_items.create(
+          params={
+              "customer": customer_id,
+              "amount": amount,
+              "currency": currency,
+              "description": description,
+              "invoice": invoice.id,
+          }
+      )
 
-        return invoice
+      invoice = self.client.invoices.finalize_invoice(
+          invoice.id
+      )
+
+      return invoice
+
     # -------------------------
     # Payment Links
     # -------------------------
 
-    def create_payment_link(
-        self,
-        customer_id: str,
-        amount: int,
-        description: str,
-    ):
-        """
-        Create a Stripe Payment Link.
-
-        Used later by the Telegram customer bot.
-        """
-
-        price = self.client.prices.create(
-            params={
-                "currency": "usd",
-                "unit_amount": amount,
-                "product_data": {
-                    "name": description,
-                },
-            }
-        )
-
-        payment_link = self.client.payment_links.create(
-            params={
-                "line_items": [
-                    {
-                        "price": price.id,
-                        "quantity": 1,
-                    }
-                ],
-            }
-        )
-
-        return payment_link
     def get_today_payment_summary(self):
       now = datetime.now(timezone.utc)
 
@@ -409,3 +384,17 @@ class StripeService:
               else None
           ),
       }
+    
+    def get_open_customer_invoices(
+      self,
+      customer_id: str,
+    ):
+      invoices = self.client.invoices.list(
+          params={
+              "customer": customer_id,
+              "status": "open",
+              "limit": 10,
+          }
+      )
+
+      return invoices.data
